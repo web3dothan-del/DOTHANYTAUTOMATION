@@ -1,0 +1,416 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: 'SceneSerif'; src: local('Georgia'), local('Times New Roman'); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px; height: 1920px; overflow: hidden;
+    background: #fff;
+    font-family: Georgia, 'Times New Roman', serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  #stage { position: relative; width: 1080px; height: 1920px; background: #fff; }
+
+  #watermark {
+    position: absolute; top: 138px; left: 0; width: 100%;
+    text-align: center; font-size: 62px; font-weight: 700;
+    color: rgba(0,0,0,0.28); letter-spacing: 1px;
+  }
+
+  .heading {
+    position: absolute; top: 232px; width: 470px;
+    text-align: center; font-size: 74px; font-weight: 700;
+    color: #0b0b0c; line-height: 1.05;
+  }
+  #headL { left: 40px; }
+  #headR { left: 570px; }
+
+  .card {
+    position: absolute; top: 340px; width: 470px; height: 450px;
+    overflow: hidden; background: #e9e9ee;
+  }
+  #cardL { left: 40px; }
+  #cardR { left: 570px; }
+  .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card .ph {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 32px; font-size: 56px; font-weight: 700; color: #fff;
+    line-height: 1.15;
+  }
+
+  #caption {
+    position: absolute; top: 812px; left: 40px; width: 1000px;
+    text-align: center; font-size: 70px; font-weight: 700;
+    color: #0b0b0c; line-height: 1.22;
+  }
+  #caption .hl { color: var(--accent); }
+
+  #figure { position: absolute; left: 140px; top: 1030px; width: 800px; height: 870px; }
+
+  #outro {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 40px;
+    background: rgba(0,0,0,0.82); color: #fff;
+  }
+  #outro .ig { width: 200px; height: 200px; }
+  #outro .handle { font-size: 78px; font-weight: 700; letter-spacing: 2px; }
+  #outro .line { font-size: 54px; opacity: 0.85; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="watermark"></div>
+  <div class="heading" id="headL"></div>
+  <div class="heading" id="headR"></div>
+  <div class="card" id="cardL"></div>
+  <div class="card" id="cardR"></div>
+  <div id="caption"></div>
+  <div id="figure"></div>
+  <div id="outro">
+    <svg class="ig" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7">
+      <rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/>
+      <circle cx="12" cy="12" r="5"/>
+      <circle cx="17.6" cy="6.4" r="1.2" fill="#fff" stroke="none"/>
+    </svg>
+    <div class="handle"></div>
+    <div class="line"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------------------------------------------------------------- math utils
+  const clamp = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const invLerp = (a, b, v) => a === b ? 1 : clamp((v - a) / (b - a), 0, 1);
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+  const easeOutBack = t => {
+    const c1 = 1.70158, c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  };
+  const easeInOut = t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  const rad = d => d * Math.PI / 180;
+
+  // ------------------------------------------------------------- stick figure
+  // The figure is rebuilt from scratch each frame from a small set of joint
+  // angles. Poses are just angle sets, so blending between them is a lerp and
+  // the idle bob is a function of time — nothing depends on wall clock.
+  const GEO = {
+    headC: [350, 142], headR: 78,
+    // Shoulders sit a clear gap below the chin, otherwise the arms read as if
+    // they grow out of the head.
+    shoulder: [350, 306],
+    hip: [350, 486],
+    upperArm: 104, foreArm: 100,
+    footY: 706,
+  };
+
+  // angles in degrees, SVG convention (0 = +x/east, positive = clockwise/down)
+  const POSES = {
+    think:      { lA1: 152, lA2: 118, rA1: -104, rA2: -152, lPoint: 0, rPoint: 0, tilt: -4, spark: 'r' },
+    pointLeft:  { lA1: 202, lA2: 196, rA1: 34,   rA2: 16,   lPoint: 1, rPoint: 0, tilt: -2, spark: 'l' },
+    pointRight: { lA1: 146, lA2: 164, rA1: -22,  rA2: -16,  lPoint: 0, rPoint: 1, tilt: 2,  spark: 'r' },
+    shrug:      { lA1: 186, lA2: 214, rA1: -6,   rA2: -34,  lPoint: 0, rPoint: 0, tilt: 0,  spark: 'b' },
+  };
+
+  function blendPose(a, b, t) {
+    const out = {};
+    for (const k of ['lA1', 'lA2', 'rA1', 'rA2', 'lPoint', 'rPoint', 'tilt']) {
+      out[k] = lerp(a[k], b[k], t);
+    }
+    out.spark = t < 0.5 ? a.spark : b.spark;
+    return out;
+  }
+
+  /** Two-segment limb: returns [elbow, hand] points. */
+  function limb(origin, a1, a2, l1, l2) {
+    const ex = origin[0] + Math.cos(rad(a1)) * l1;
+    const ey = origin[1] + Math.sin(rad(a1)) * l1;
+    const hx = ex + Math.cos(rad(a2)) * l2;
+    const hy = ey + Math.sin(rad(a2)) * l2;
+    return [[ex, ey], [hx, hy]];
+  }
+
+  function handSvg(pt, dirDeg, pointing) {
+    const [x, y] = pt;
+    if (pointing > 0.5) {
+      // A fist with one finger out. The finger is kinked off the forearm axis —
+      // drawn in line with it, fist and finger merge into one lollipop shape.
+      const r = 25;
+      const a = dirDeg - 26;
+      const sx = x + Math.cos(rad(a)) * r * 0.5;
+      const sy = y + Math.sin(rad(a)) * r * 0.5;
+      const fx = x + Math.cos(rad(a)) * (r + 62);
+      const fy = y + Math.sin(rad(a)) * (r + 62);
+      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="#fff" stroke="#0b0b0c" stroke-width="9"/>` +
+             `<line x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${fx.toFixed(1)}" y2="${fy.toFixed(1)}" stroke="#0b0b0c" stroke-width="12" stroke-linecap="round"/>`;
+    }
+    // open mitten
+    return `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="30" ry="23" fill="#fff" stroke="#0b0b0c" stroke-width="9" transform="rotate(${dirDeg.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`;
+  }
+
+  function sparkSvg(pt, dirDeg) {
+    // Motion lines sit perpendicular to the limb so they never run along the
+    // forearm or collide with an extended finger.
+    const base = dirDeg - 90;
+    const [x, y] = pt;
+    let s = '';
+    for (const off of [-30, 0, 30]) {
+      const a = base + off;
+      const x1 = x + Math.cos(rad(a)) * 44, y1 = y + Math.sin(rad(a)) * 44;
+      const x2 = x + Math.cos(rad(a)) * 72, y2 = y + Math.sin(rad(a)) * 72;
+      s += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#0b0b0c" stroke-width="8" stroke-linecap="round"/>`;
+    }
+    return s;
+  }
+
+  function drawFigure(pose, t) {
+    const bob = Math.sin(t * 2.0) * 7;          // gentle idle motion
+    const hc = [GEO.headC[0], GEO.headC[1] + bob];
+    const sh = [GEO.shoulder[0], GEO.shoulder[1] + bob * 0.6];
+    const hip = GEO.hip;
+
+    const [lElbow, lHand] = limb(sh, pose.lA1, pose.lA2, GEO.upperArm, GEO.foreArm);
+    const [rElbow, rHand] = limb(sh, pose.rA1, pose.rA2, GEO.upperArm, GEO.foreArm);
+
+    const S = 'stroke="#0b0b0c" stroke-width="11" stroke-linecap="round" fill="none"';
+
+    let s = `<svg viewBox="0 0 700 760" width="100%" height="100%">`;
+
+    // legs (static stance, feet planted)
+    s += `<path d="M${hip[0]} ${hip[1]} L272 596 L258 ${GEO.footY}" ${S}/>`;
+    s += `<path d="M${hip[0]} ${hip[1]} L428 596 L442 ${GEO.footY}" ${S}/>`;
+    // sneakers
+    s += `<path d="M238 ${GEO.footY} q-30 0 -30 22 q0 16 26 16 h60 q16 0 16 -18 v-20 z" fill="#fff" stroke="#0b0b0c" stroke-width="9" stroke-linejoin="round"/>`;
+    s += `<path d="M462 ${GEO.footY} q30 0 30 22 q0 16 -26 16 h-60 q-16 0 -16 -18 v-20 z" fill="#fff" stroke="#0b0b0c" stroke-width="9" stroke-linejoin="round"/>`;
+
+    // torso
+    s += `<line x1="${sh[0]}" y1="${(hc[1] + GEO.headR - 4).toFixed(1)}" x2="${hip[0]}" y2="${hip[1]}" ${S}/>`;
+
+    // arms
+    s += `<path d="M${sh[0].toFixed(1)} ${sh[1].toFixed(1)} L${lElbow[0].toFixed(1)} ${lElbow[1].toFixed(1)} L${lHand[0].toFixed(1)} ${lHand[1].toFixed(1)}" ${S}/>`;
+    s += `<path d="M${sh[0].toFixed(1)} ${sh[1].toFixed(1)} L${rElbow[0].toFixed(1)} ${rElbow[1].toFixed(1)} L${rHand[0].toFixed(1)} ${rHand[1].toFixed(1)}" ${S}/>`;
+    s += handSvg(lHand, pose.lA2, pose.lPoint);
+    s += handSvg(rHand, pose.rA2, pose.rPoint);
+
+    // motion sparks near the active hand
+    if (pose.spark === 'l' || pose.spark === 'b') s += sparkSvg(lHand, pose.lA2);
+    if (pose.spark === 'r' || pose.spark === 'b') s += sparkSvg(rHand, pose.rA2);
+
+    // bow tie, sitting on the neck between chin and shoulders
+    s += `<g transform="translate(${sh[0]} ${(sh[1] - 46).toFixed(1)})">
+      <path d="M0 0 L-42 -22 L-42 22 Z" fill="#fff" stroke="#0b0b0c" stroke-width="9" stroke-linejoin="round"/>
+      <path d="M0 0 L42 -22 L42 22 Z" fill="#fff" stroke="#0b0b0c" stroke-width="9" stroke-linejoin="round"/>
+      <circle cx="0" cy="0" r="10" fill="#0b0b0c"/>
+    </g>`;
+
+    // head group (tilts with pose)
+    s += `<g transform="rotate(${pose.tilt.toFixed(2)} ${hc[0]} ${hc[1].toFixed(1)})">`;
+    s += `<circle cx="${hc[0]}" cy="${hc[1].toFixed(1)}" r="${GEO.headR}" fill="#fff" stroke="#0b0b0c" stroke-width="11"/>`;
+    // glasses
+    const gy = hc[1] + 4;
+    s += `<circle cx="${hc[0] - 30}" cy="${gy.toFixed(1)}" r="25" fill="#fff" stroke="#0b0b0c" stroke-width="8"/>`;
+    s += `<circle cx="${hc[0] + 30}" cy="${gy.toFixed(1)}" r="25" fill="#fff" stroke="#0b0b0c" stroke-width="8"/>`;
+    s += `<line x1="${hc[0] - 5}" y1="${gy.toFixed(1)}" x2="${hc[0] + 5}" y2="${gy.toFixed(1)}" stroke="#0b0b0c" stroke-width="8"/>`;
+    s += `<circle cx="${hc[0] - 30}" cy="${gy.toFixed(1)}" r="8" fill="#0b0b0c"/>`;
+    s += `<circle cx="${hc[0] + 30}" cy="${gy.toFixed(1)}" r="8" fill="#0b0b0c"/>`;
+    // smile
+    s += `<path d="M${hc[0] - 32} ${(gy + 38).toFixed(1)} q32 32 64 0" fill="none" stroke="#0b0b0c" stroke-width="9" stroke-linecap="round"/>`;
+    // cap
+    s += `<g>
+      <path d="M${hc[0] - 80} ${(hc[1] - 26).toFixed(1)} a80 80 0 0 1 160 0 z" fill="#e11d2f" stroke="#0b0b0c" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M${hc[0] - 82} ${(hc[1] - 26).toFixed(1)} h164" stroke="#0b0b0c" stroke-width="10" stroke-linecap="round"/>
+      <path d="M${hc[0] + 74} ${(hc[1] - 30).toFixed(1)} q64 -6 66 26 q-34 14 -68 4 z" fill="#e11d2f" stroke="#0b0b0c" stroke-width="10" stroke-linejoin="round"/>
+    </g>`;
+    s += `</g>`;
+
+    s += `</svg>`;
+    return s;
+  }
+
+  // ------------------------------------------------------------------ helpers
+  // Hand-picked hues rather than a raw hash: a hash routinely gives the two
+  // cards near-identical colours, which kills the side-by-side comparison.
+  // Ordered so that i and i+4 are always contrasting — the right card is
+  // exactly four steps along, so no pair can come out as two greens.
+  const PH_HUES = [208, 12, 152, 292, 32, 190, 262, 108];
+
+  function placeholder(term, seed, side) {
+    let n = 0;
+    for (const ch of String(seed)) n = (Math.imul(n, 31) + ch.charCodeAt(0)) >>> 0;
+    // Avalanche the low bits — indexing straight off a *31 accumulator gives
+    // near-identical results for similar-length strings, so every segment
+    // ends up the same colour.
+    // Every step is forced back to unsigned: ^= yields a signed int32, and a
+    // negative index would silently produce hsl(undefined) — an invisible card.
+    n = (n ^ (n >>> 13)) >>> 0;
+    n = Math.imul(n, 0x5bd1e995) >>> 0;
+    n = (n ^ (n >>> 15)) >>> 0;
+    // Push the right card a half-turn around the palette from the left one.
+    const h = PH_HUES[(n + (side === 'R' ? 4 : 0)) % PH_HUES.length];
+    return `<div class="ph" style="background:linear-gradient(145deg,hsl(${h},58%,46%),hsl(${(h + 26) % 360},64%,26%))">${term}</div>`;
+  }
+
+  function captionHtml(line) {
+    if (!line) return '';
+    const text = line.text || '';
+    const hl = line.highlight;
+    if (!hl) return escapeHtml(text);
+    const i = text.toLowerCase().indexOf(String(hl).toLowerCase());
+    if (i < 0) return escapeHtml(text);
+    return escapeHtml(text.slice(0, i)) +
+      `<span class="hl">${escapeHtml(text.slice(i, i + hl.length))}</span>` +
+      escapeHtml(text.slice(i + hl.length));
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+
+  // -------------------------------------------------------------------- scene
+  const el = {
+    stage: document.getElementById('stage'),
+    watermark: document.getElementById('watermark'),
+    headL: document.getElementById('headL'),
+    headR: document.getElementById('headR'),
+    cardL: document.getElementById('cardL'),
+    cardR: document.getElementById('cardR'),
+    caption: document.getElementById('caption'),
+    figure: document.getElementById('figure'),
+    outro: document.getElementById('outro'),
+  };
+
+  let DATA = null;
+  let SEGMENTS = [];
+  let TOTAL = 0;
+
+  /**
+   * Beat sheet within one segment, as fractions of the segment duration. Keeping
+   * these proportional means a 10s or 15s segment keeps the same rhythm.
+   */
+  const BEATS = {
+    cardsIn: [0.00, 0.05],
+    hook:    [0.05, 0.22],   // "what's the difference?"  — thinking
+    lineA:   [0.22, 0.45],   // left term explained       — points left
+    lineB:   [0.45, 0.70],   // right term explained      — points right
+    lineC:   [0.70, 0.96],   // the payoff line           — shrug
+    fadeOut: [0.96, 1.00],
+  };
+
+  function activeBeat(f) {
+    if (f < BEATS.hook[0]) return 'cardsIn';
+    if (f < BEATS.lineA[0]) return 'hook';
+    if (f < BEATS.lineB[0]) return 'lineA';
+    if (f < BEATS.lineC[0]) return 'lineB';
+    if (f < BEATS.fadeOut[0]) return 'lineC';
+    return 'fadeOut';
+  }
+
+  function init(data) {
+    DATA = data;
+    el.stage.style.setProperty('--accent', data.brand.accent);
+    el.watermark.textContent = data.brand.handle;
+    el.outro.querySelector('.handle').textContent = data.brand.outroHandle || '';
+    el.outro.querySelector('.line').textContent = data.brand.outroLine || '';
+
+    let cursor = 0;
+    SEGMENTS = data.segments.map(seg => {
+      const s = { ...seg, start: cursor, duration: seg.duration };
+      cursor += seg.duration;
+      return s;
+    });
+    TOTAL = cursor + data.outroSeconds;
+    return { total: TOTAL, frames: Math.round(TOTAL * data.fps) };
+  }
+
+  function seek(t) {
+    // -------- outro card
+    const outroStart = TOTAL - DATA.outroSeconds;
+    const outroIn = invLerp(outroStart, outroStart + 0.45, t);
+    el.outro.style.opacity = t >= outroStart ? easeOutCubic(outroIn).toFixed(4) : '0';
+    el.outro.style.display = t >= outroStart - 0.02 ? 'flex' : 'none';
+
+    const seg = SEGMENTS.find(s => t >= s.start && t < s.start + s.duration)
+      || SEGMENTS[SEGMENTS.length - 1];
+    const local = clamp(t - seg.start, 0, seg.duration);
+    const f = local / seg.duration;
+    const beat = activeBeat(f);
+
+    // -------- headings + cards
+    const popL = easeOutBack(invLerp(0, 0.04, f));
+    const popR = easeOutBack(invLerp(0.015, 0.055, f));
+
+    el.headL.textContent = seg.left.term;
+    el.headR.textContent = seg.right.term;
+
+    setCard(el.cardL, seg.left, seg.slug, 'L');
+    setCard(el.cardR, seg.right, seg.slug, 'R');
+
+    // During lineA the right side steps aside so the eye lands on the left term.
+    const hideR = beat === 'lineA'
+      ? invLerp(BEATS.lineA[0], BEATS.lineA[0] + 0.03, f)
+      : (beat === 'lineB' ? 1 - invLerp(BEATS.lineB[0], BEATS.lineB[0] + 0.03, f) : 0);
+    const dimL = beat === 'lineB' ? invLerp(BEATS.lineB[0], BEATS.lineB[0] + 0.03, f) * 0.55 : 0;
+
+    applyPair(el.headL, el.cardL, popL, 1 - dimL, 0);
+    applyPair(el.headR, el.cardR, popR, 1 - hideR, hideR * 60);
+
+    // -------- caption
+    const lines = [seg.hook || { text: "what's the difference?" }, ...seg.lines];
+    const idx = { cardsIn: 0, hook: 0, lineA: 1, lineB: 2, lineC: 3, fadeOut: 3 }[beat];
+    const line = lines[Math.min(idx, lines.length - 1)];
+    el.caption.innerHTML = captionHtml(line);
+
+    const beatStart = beat === 'cardsIn' ? 0 : BEATS[beat][0];
+    const rise = easeOutCubic(invLerp(beatStart, beatStart + 0.035, f));
+    el.caption.style.opacity = rise.toFixed(4);
+    el.caption.style.transform = `translateY(${((1 - rise) * 26).toFixed(2)}px)`;
+
+    // -------- figure
+    const poseName = { cardsIn: 'think', hook: 'think', lineA: 'pointLeft', lineB: 'pointRight', lineC: 'shrug', fadeOut: 'shrug' }[beat];
+    const prevName = { cardsIn: 'think', hook: 'think', lineA: 'think', lineB: 'pointLeft', lineC: 'pointRight', fadeOut: 'shrug' }[beat];
+    const blend = easeInOut(invLerp(beatStart, beatStart + 0.03, f));
+    const pose = blendPose(POSES[prevName], POSES[poseName], blend);
+    el.figure.innerHTML = drawFigure(pose, local);
+
+    // -------- segment cross-fade
+    const fade = beat === 'fadeOut' ? invLerp(BEATS.fadeOut[0], 1, f) : 0;
+    const fadeIn = easeOutCubic(invLerp(0, 0.03, f));
+    el.stage.style.opacity = Math.min(fadeIn, 1 - fade * 0.92).toFixed(4);
+  }
+
+  function setCard(node, side, slug, which) {
+    // Cache on the term as well as the image: placeholder cards have no image
+    // URL, so keying on the URL alone would freeze the first segment's card in
+    // place for the whole video.
+    const key = side.image ? `img:${slug}:${which}` : `ph:${slug}:${which}:${side.term}`;
+    if (node.dataset.key === key) return;    // avoid re-decoding the image each frame
+    node.dataset.key = key;
+    // Both sides hash the same slug so the right card is always a fixed
+    // distance around the palette from the left — hashing them independently
+    // lets a segment draw both cards in one colour.
+    node.innerHTML = side.image
+      ? `<img src="${side.image}">`
+      : placeholder(escapeHtml(side.term), slug, which);
+  }
+
+  function applyPair(head, card, pop, opacity, slide) {
+    const p = clamp(pop, 0, 1.3);
+    const o = clamp(opacity, 0, 1);
+    head.style.opacity = o.toFixed(4);
+    card.style.opacity = o.toFixed(4);
+    head.style.transform = `translateX(${slide.toFixed(1)}px) scale(${p.toFixed(3)})`;
+    card.style.transform = `translateX(${slide.toFixed(1)}px) scale(${p.toFixed(3)})`;
+  }
+
+  window.SCENE = { init, seek, get total() { return TOTAL; } };
+})();
+</script>
+</body>
+</html>

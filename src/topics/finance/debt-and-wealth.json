@@ -1,0 +1,63 @@
+{
+  "id": "debt-and-wealth",
+  "series": "finance",
+  "meta": {
+    "title": "Good Debt vs Bad Debt — 5 money words people get wrong",
+    "description": "Good debt, bad debt, gross, net, saving, investing — five pairs of money words that sound similar and mean very different things.\n\n0:00 Good Debt vs Bad Debt\n0:12 Gross vs Net\n0:24 Saving vs Investing\n0:36 Credit vs Debit\n0:48 Rich vs Wealthy\n\nNot financial advice — educational only.",
+    "tags": ["good debt vs bad debt", "personal finance", "gross vs net", "saving vs investing", "financial literacy", "money tips", "shorts"],
+    "categoryId": "27",
+    "privacyStatus": "private"
+  },
+  "segments": [
+    {
+      "left": { "term": "Good Debt", "image": "finance/good-debt.jpg" },
+      "right": { "term": "Bad Debt", "image": "finance/bad-debt.jpg" },
+      "hook": "what's the difference?",
+      "lines": [
+        { "text": "good debt buys something that grows", "highlight": "grows" },
+        { "text": "bad debt buys something that shrinks", "highlight": "shrinks" },
+        { "text": "the rate matters less than what you bought", "highlight": "what you bought" }
+      ]
+    },
+    {
+      "left": { "term": "Gross", "image": "finance/gross.jpg" },
+      "right": { "term": "Net", "image": "finance/net.jpg" },
+      "hook": "why your payslip lies",
+      "lines": [
+        { "text": "gross is the number in the job offer", "highlight": "job offer" },
+        { "text": "net is what actually lands in your bank", "highlight": "actually lands" },
+        { "text": "always budget with the second number", "highlight": "second" }
+      ]
+    },
+    {
+      "left": { "term": "Saving", "image": "finance/saving.jpg" },
+      "right": { "term": "Investing", "image": "finance/investing.jpg" },
+      "hook": "what's the difference?",
+      "lines": [
+        { "text": "saving protects money you already have", "highlight": "protects" },
+        { "text": "investing puts that money to work", "highlight": "to work" },
+        { "text": "save for next year, invest for next decade", "highlight": "next decade" }
+      ]
+    },
+    {
+      "left": { "term": "Credit", "image": "finance/credit.jpg" },
+      "right": { "term": "Debit", "image": "finance/debit.jpg" },
+      "hook": "same card, different money",
+      "lines": [
+        { "text": "credit spends the bank's money", "highlight": "bank's" },
+        { "text": "debit spends money you already have", "highlight": "already have" },
+        { "text": "one builds a score, one builds a habit", "highlight": "habit" }
+      ]
+    },
+    {
+      "left": { "term": "Rich", "image": "finance/rich.jpg" },
+      "right": { "term": "Wealthy", "image": "finance/wealthy.jpg" },
+      "hook": "not the same thing",
+      "lines": [
+        { "text": "rich is how much you earn each month", "highlight": "earn" },
+        { "text": "wealthy is how long you'd last without it", "highlight": "how long" },
+        { "text": "one is income, the other is freedom", "highlight": "freedom" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "id": "money-basics",
+  "series": "finance",
+  "meta": {
+    "title": "Asset vs Liability — 5 money words explained in 60 seconds",
+    "description": "Asset or liability? Need or want? Five money terms people mix up, explained in plain English in under a minute.\n\n0:00 Asset vs Liability\n0:12 Need vs Want\n0:24 Expense vs Investment\n0:36 Stocks vs Bonds\n0:48 Dividend vs Yield\n\nNot financial advice — educational only.",
+    "tags": ["personal finance", "money basics", "assets vs liabilities", "financial literacy", "investing for beginners", "money tips", "shorts"],
+    "categoryId": "27",
+    "privacyStatus": "private"
+  },
+  "segments": [
+    {
+      "left": { "term": "Asset", "image": "finance/asset.jpg" },
+      "right": { "term": "Liability", "image": "finance/liability.jpg" },
+      "hook": "what's the difference?",
+      "lines": [
+        { "text": "an asset puts money into your pocket", "highlight": "into" },
+        { "text": "a liability takes money out of it", "highlight": "out" },
+        { "text": "buy assets before you buy liabilities", "highlight": "before" }
+      ]
+    },
+    {
+      "left": { "term": "Need", "image": "finance/need.jpg" },
+      "right": { "term": "Want", "image": "finance/want.jpg" },
+      "hook": "which one is this?",
+      "lines": [
+        { "text": "a need is essential for living", "highlight": "essential" },
+        { "text": "a want is nice, but optional", "highlight": "optional" },
+        { "text": "wants turn into needs when you stop noticing", "highlight": "stop noticing" }
+      ]
+    },
+    {
+      "left": { "term": "Expense", "image": "finance/expense.jpg" },
+      "right": { "term": "Investment", "image": "finance/investment.jpg" },
+      "hook": "what's the difference?",
+      "lines": [
+        { "text": "an expense is gone the moment you pay", "highlight": "gone" },
+        { "text": "an investment can pay you back later", "highlight": "pay you back" },
+        { "text": "same money, completely different future", "highlight": "different future" }
+      ]
+    },
+    {
+      "left": { "term": "Stocks", "image": "finance/stocks.jpg" },
+      "right": { "term": "Bonds", "image": "finance/bonds.jpg" },
+      "hook": "what's the difference?",
+      "lines": [
+        { "text": "a stock makes you an owner", "highlight": "owner" },
+        { "text": "a bond makes you a lender", "highlight": "lender" },
+        { "text": "owners take the risk, lenders take the rate", "highlight": "risk" }
+      ]
+    },
+    {
+      "left": { "term": "Dividend", "image": "finance/dividend.jpg" },
+      "right": { "term": "Yield", "image": "finance/yield.jpg" },
+      "hook": "not the same thing",
+      "lines": [
+        { "text": "a dividend is the cash you actually get", "highlight": "cash" },
+        { "text": "yield is that cash as a % of the price", "highlight": "% of the price" },
+        { "text": "a huge yield often means a falling price", "highlight": "falling price" }
+      ]
+    }
+  ]
+}

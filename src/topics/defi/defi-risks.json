@@ -1,0 +1,63 @@
+{
+  "id": "defi-risks",
+  "series": "defi",
+  "meta": {
+    "title": "Impermanent Loss vs Slippage — 5 DeFi risks explained fast",
+    "description": "The five DeFi words that cost beginners the most money, explained in plain English in under a minute.\n\n0:00 Impermanent Loss vs Slippage\n0:12 Bridging vs Swapping\n0:24 Wrapped vs Native\n0:36 Liquid Staking vs Staking\n0:48 Audit vs Safe\n\nEducational only — not financial advice. Do your own research.",
+    "tags": ["defi", "impermanent loss", "slippage", "liquid staking", "wrapped tokens", "crypto risks", "onchain", "shorts"],
+    "categoryId": "28",
+    "privacyStatus": "private"
+  },
+  "segments": [
+    {
+      "left": { "term": "Impermanent Loss", "image": "defi/il.jpg" },
+      "right": { "term": "Slippage", "image": "defi/slippage.jpg" },
+      "hook": "both eat your money",
+      "lines": [
+        { "text": "impermanent loss hits you while you wait", "highlight": "while you wait" },
+        { "text": "slippage hits you the second you trade", "highlight": "the second" },
+        { "text": "one is a position, one is a moment", "highlight": "a moment" }
+      ]
+    },
+    {
+      "left": { "term": "Bridging", "image": "defi/bridge.jpg" },
+      "right": { "term": "Swapping", "image": "defi/swap.jpg" },
+      "hook": "what's the difference?",
+      "lines": [
+        { "text": "bridging moves a token to another chain", "highlight": "another chain" },
+        { "text": "swapping trades it for a different token", "highlight": "different token" },
+        { "text": "bridges carry the bigger risk by far", "highlight": "bigger risk" }
+      ]
+    },
+    {
+      "left": { "term": "Wrapped", "image": "defi/wrapped.jpg" },
+      "right": { "term": "Native", "image": "defi/native.jpg" },
+      "hook": "why there are two of them",
+      "lines": [
+        { "text": "wrapped is an IOU issued by someone", "highlight": "IOU" },
+        { "text": "native is the real asset on its chain", "highlight": "real asset" },
+        { "text": "an IOU is only as good as its issuer", "highlight": "its issuer" }
+      ]
+    },
+    {
+      "left": { "term": "Liquid Staking", "image": "defi/lst.jpg" },
+      "right": { "term": "Staking", "image": "defi/plain-staking.jpg" },
+      "hook": "what's the difference?",
+      "lines": [
+        { "text": "staking locks your tokens up", "highlight": "locks" },
+        { "text": "liquid staking hands you a receipt token", "highlight": "receipt token" },
+        { "text": "that receipt can trade below the real thing", "highlight": "below" }
+      ]
+    },
+    {
+      "left": { "term": "Audited", "image": "defi/audit.jpg" },
+      "right": { "term": "Safe", "image": "defi/safe.jpg" },
+      "hook": "these are not synonyms",
+      "lines": [
+        { "text": "an audit checks the code at one moment", "highlight": "one moment" },
+        { "text": "safe would mean nothing can go wrong", "highlight": "nothing" },
+        { "text": "audited protocols still get drained", "highlight": "still" }
+      ]
+    }
+  ]
+}
