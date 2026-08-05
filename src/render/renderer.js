@@ -28,7 +28,10 @@ function chromiumExecutable() {
  * @returns {Promise<{dir: string, count: number, duration: number}>}
  */
 export async function renderFrames(topic, { onProgress } = {}) {
-  const dir = path.join(PATHS.frames, topic.id);
+  // Scoped per run, not per topic: two renders of the same topic at once would
+  // otherwise share one directory, and whichever finished first would delete
+  // the frames the other was still encoding.
+  const dir = path.join(PATHS.frames, `${topic.id}-${process.pid}-${Date.now().toString(36)}`);
   await fs.rm(dir, { recursive: true, force: true });
   await fs.mkdir(dir, { recursive: true });
 

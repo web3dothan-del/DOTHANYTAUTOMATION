@@ -128,7 +128,8 @@ async function renderTopic(topic, flags) {
   // Frame 24 lands just after the cards have popped in — a cleaner still than frame 0.
   const thumbnail = await grabThumbnail(dir, path.join(PATHS.out, `${topic.id}.jpg`), Math.min(24, count - 1));
 
-  if (!flags['keep-frames']) await cleanFrames(topic.id);
+  if (!flags['keep-frames']) await cleanFrames(dir);
+  else console.log(`  frames kept in ${dir}`);
 
   const { size } = await fs.stat(video);
   console.log(`  ${video}  (${(size / 1048576).toFixed(1)} MB)`);

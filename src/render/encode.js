@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { VIDEO, PATHS } from '../config.js';
+import { VIDEO } from '../config.js';
 
 /**
  * Muxes a PNG frame sequence into an MP4 that YouTube accepts without
@@ -53,8 +53,8 @@ export async function grabThumbnail(framesDir, outFile, frameIndex = 0) {
   return outFile;
 }
 
-export async function cleanFrames(topicId) {
-  await fs.rm(path.join(PATHS.frames, topicId), { recursive: true, force: true });
+export async function cleanFrames(framesDir) {
+  await fs.rm(framesDir, { recursive: true, force: true });
 }
 
 function run(cmd, args) {
