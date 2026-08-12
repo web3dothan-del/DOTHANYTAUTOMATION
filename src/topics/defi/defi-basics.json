@@ -1,0 +1,147 @@
+{
+  "id": "defi-basics",
+  "series": "defi",
+  "meta": {
+    "title": "APR vs APY — 5 DeFi terms explained in 60 seconds",
+    "description": "APR or APY? TVL or market cap? Five DeFi terms that trip up almost everyone, explained in plain English in under a minute.\n\n0:00 APR vs APY\n0:12 TVL vs Market Cap\n0:24 Staking vs Lending\n0:36 Gas vs Fee\n0:48 CEX vs DEX\n\nEducational only — not financial advice. Do your own research.",
+    "tags": [
+      "defi",
+      "apr vs apy",
+      "crypto for beginners",
+      "tvl",
+      "staking vs lending",
+      "cex vs dex",
+      "onchain",
+      "shorts"
+    ],
+    "categoryId": "28",
+    "privacyStatus": "private"
+  },
+  "segments": [
+    {
+      "left": {
+        "term": "APR",
+        "motif": "percent"
+      },
+      "right": {
+        "term": "APY",
+        "motif": "chartup"
+      },
+      "hook": "what's the difference?",
+      "lines": [
+        {
+          "text": "APR is the plain rate, no compounding",
+          "highlight": "no compounding"
+        },
+        {
+          "text": "APY adds compounding on top of it",
+          "highlight": "adds compounding"
+        },
+        {
+          "text": "the same pool can quote you both",
+          "highlight": "both"
+        }
+      ]
+    },
+    {
+      "left": {
+        "term": "TVL",
+        "motif": "vault"
+      },
+      "right": {
+        "term": "Market Cap",
+        "motif": "pie"
+      },
+      "hook": "two very different numbers",
+      "lines": [
+        {
+          "text": "TVL is what people deposited into it",
+          "highlight": "deposited"
+        },
+        {
+          "text": "market cap is what its token is worth",
+          "highlight": "token"
+        },
+        {
+          "text": "big TVL with a small cap gets attention",
+          "highlight": "attention"
+        }
+      ]
+    },
+    {
+      "left": {
+        "term": "Staking",
+        "motif": "lock"
+      },
+      "right": {
+        "term": "Lending",
+        "motif": "handcoin"
+      },
+      "hook": "both pay yield, differently",
+      "lines": [
+        {
+          "text": "staking helps secure the network",
+          "highlight": "secure"
+        },
+        {
+          "text": "lending hands tokens to a borrower",
+          "highlight": "borrower"
+        },
+        {
+          "text": "one pays for security, one pays for risk",
+          "highlight": "risk"
+        }
+      ]
+    },
+    {
+      "left": {
+        "term": "Gas",
+        "motif": "fuelpump"
+      },
+      "right": {
+        "term": "Protocol Fee",
+        "motif": "receipt"
+      },
+      "hook": "why you paid twice",
+      "lines": [
+        {
+          "text": "gas is what the network charges you",
+          "highlight": "network"
+        },
+        {
+          "text": "a fee is what the app charges you",
+          "highlight": "app"
+        },
+        {
+          "text": "cheap chains only fix the first one",
+          "highlight": "first"
+        }
+      ]
+    },
+    {
+      "left": {
+        "term": "CEX",
+        "motif": "bank"
+      },
+      "right": {
+        "term": "DEX",
+        "motif": "nodes"
+      },
+      "hook": "who holds your keys?",
+      "lines": [
+        {
+          "text": "a CEX holds the keys on your behalf",
+          "highlight": "on your behalf"
+        },
+        {
+          "text": "a DEX lets you keep them yourself",
+          "highlight": "yourself"
+        },
+        {
+          "text": "not your keys, not your coins",
+          "highlight": "not your keys"
+        }
+      ]
+    }
+  ]
+}

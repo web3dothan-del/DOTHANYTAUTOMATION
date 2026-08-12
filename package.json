@@ -1,0 +1,25 @@
+{
+  "name": "dothan-yt-automation",
+  "version": "1.0.0",
+  "description": "Generates and publishes vertical comparison-explainer Shorts to YouTube.",
+  "type": "module",
+  "bin": {
+    "dothan": "./src/cli.js"
+  },
+  "scripts": {
+    "render": "node src/cli.js render",
+    "batch": "node src/cli.js batch",
+    "auth": "node src/cli.js auth",
+    "upload": "node src/cli.js upload",
+    "publish": "node src/cli.js publish",
+    "topics": "node src/cli.js topics"
+  },
+  "dependencies": {
+    "googleapis": "^144.0.0",
+    "playwright": "^1.49.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}
