@@ -6,7 +6,9 @@ import { chromium } from 'playwright';
 import { VIDEO, PATHS } from '../config.js';
 import { topicDuration } from './topic.js';
 
-const SCENE = path.join(path.dirname(url.fileURLToPath(import.meta.url)), 'scene.html');
+const HERE = path.dirname(url.fileURLToPath(import.meta.url));
+const SCENE = path.join(HERE, 'scene.html');
+const MOTIFS = path.join(HERE, 'motifs.js');
 
 /**
  * Normally Playwright finds its own Chromium. Some CI images ship a browser at a
@@ -48,6 +50,9 @@ export async function renderFrames(topic, { onProgress } = {}) {
       deviceScaleFactor: 1,
     });
     await page.goto(url.pathToFileURL(SCENE).href, { waitUntil: 'load' });
+    // Injected rather than <script src> — a file:// page cannot reliably load a
+    // sibling script, and Playwright inlines the contents for us.
+    await page.addScriptTag({ path: MOTIFS });
     await page.evaluate(data => window.SCENE.init(data), topic);
     // Give inlined images a beat to decode before the first capture.
     await page.evaluate(() => document.fonts.ready);

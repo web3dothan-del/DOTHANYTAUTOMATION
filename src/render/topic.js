@@ -1,6 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { TIMING, BRAND, VIDEO, PATHS } from '../config.js';
+// Sets globalThis.MOTIF_NAMES — imported for validation so a typo'd motif is
+// caught here rather than silently falling back to a word card mid-render.
+import './motifs.js';
 
 const MIME = {
   '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
@@ -22,8 +25,8 @@ export async function loadTopic(topicPath) {
       duration: seg.duration ?? raw.segmentSeconds ?? TIMING.segmentSeconds,
       hook: seg.hook ? asLine(seg.hook) : { text: "what's the difference?" },
       lines: seg.lines.map(asLine),
-      left: { term: seg.left.term, image: await inlineImage(seg.left.image) },
-      right: { term: seg.right.term, image: await inlineImage(seg.right.image) },
+      left: { term: seg.left.term, motif: seg.left.motif, image: await inlineImage(seg.left.image) },
+      right: { term: seg.right.term, motif: seg.right.motif, image: await inlineImage(seg.right.image) },
     });
   }
 
@@ -71,6 +74,14 @@ function validate(raw, topicPath) {
     const at = `${where} segment ${i}`;
     if (!seg.left?.term || !seg.right?.term) {
       throw new Error(`${at}: needs left.term and right.term`);
+    }
+    for (const side of ['left', 'right']) {
+      const motif = seg[side].motif;
+      if (motif && !globalThis.MOTIF_NAMES.includes(motif)) {
+        throw new Error(
+          `${at}: unknown ${side}.motif "${motif}". Available: ${globalThis.MOTIF_NAMES.join(', ')}`,
+        );
+      }
     }
     if (!Array.isArray(seg.lines) || seg.lines.length !== 3) {
       throw new Error(`${at}: needs exactly 3 script lines (got ${seg.lines?.length ?? 0})`);

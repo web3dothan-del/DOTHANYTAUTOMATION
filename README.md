@@ -70,6 +70,19 @@ raise it deliberately with `--privacy` or by editing the topic.
 **Quota note:** each upload costs ~1,600 units against a default daily quota of
 10,000, so a fresh project supports about 6 uploads/day.
 
+### What `tags` actually does
+
+`meta.tags` becomes `snippet.tags` on the video — keyword metadata that is
+visible through the API and in page source, but never on the video itself. It is
+a weak ranking signal; title, description and viewer retention matter far more.
+Its remaining value is covering misspellings and jargon the title has no room
+for. The uploader caps the list at YouTube's real limit, which is 500 characters
+in total rather than a fixed number of tags, and drops the overflow.
+
+`#Shorts` is a different thing entirely: it goes in the *description* (appended
+automatically if a topic omits it) and is the actual Shorts-shelf signal. A
+vertical video under 3 minutes also qualifies on its own.
+
 ## Writing a topic
 
 A topic is one JSON file under `src/topics/<series>/`. Each segment is one term
@@ -82,14 +95,14 @@ pair and runs 12 seconds.
   "meta": {
     "title": "…",              // ≤100 chars, truncated if longer
     "description": "…",        // #Shorts is appended if absent
-    "tags": ["…"],
+    "tags": ["…"],             // YouTube keyword metadata; see note below
     "categoryId": "27",        // 27 = Education, 28 = Science & Tech
     "privacyStatus": "private"
   },
   "segments": [
     {
-      "left":  { "term": "Asset",     "image": "finance/asset.jpg" },
-      "right": { "term": "Liability", "image": "finance/liability.jpg" },
+      "left":  { "term": "Asset",     "motif": "skyscraper" },
+      "right": { "term": "Liability", "motif": "sportscar" },
       "hook": "what's the difference?",
       "lines": [
         { "text": "an asset puts money into your pocket", "highlight": "into" },
@@ -123,15 +136,37 @@ so changing `segmentSeconds` keeps the rhythm:
 | line C | 70–96% | the payoff | shrug |
 | fade | 96–100% | crossfade to next pair | — |
 
-## Images
+## Card artwork
 
-Put photos in `assets/images/<series>/<name>.jpg` and reference them relative to
-that directory. Images are inlined as data URIs at render time, so the scene has
-no external dependencies.
+Each side of a comparison shows a card. Three sources, in priority order:
 
-**A missing image is not an error** — the scene draws a labelled gradient card
-instead, so a topic is renderable while you are still sourcing art. Use images
-you have the rights to; the seeded topics ship with no photos for that reason.
+1. **`image`** — a photo, relative to `assets/images/`. Inlined as a data URI at
+   render time, so the scene has no external dependencies.
+2. **`motif`** — a drawn vector illustration from `src/render/motifs.js`.
+3. **neither** — a labelled gradient card, so a half-written topic still renders.
+
+The seeded topics all use motifs. They are generated rather than sourced, which
+keeps the channel clear of stock-photo licensing and of the reused press
+photography that comparison Shorts usually lean on. They also render in the
+card's own hue, so the art stays consistent with the palette.
+
+33 motifs ship today:
+
+```
+skyscraper house bridge sportscar shoppingbags gift
+chartup candles stairsdown pie percent
+cashstack coinstack token moneybag piggybank wallet creditcard
+handcoin tree seedling bank vault lock shield
+magnifier nodes fuelpump receipt scales swap droplet certificate
+```
+
+An unknown motif name is rejected at load with the full list, so a typo never
+silently degrades to a word card. To add one, write a function returning SVG
+markup for a 400×400 viewBox — it receives `{a, b, ink}`, the card's palette.
+
+To use photos instead, drop files into `assets/images/<series>/` and add
+`"image": "<series>/<name>.jpg"` alongside the term. Use images you have the
+rights to.
 
 ## Branding
 
@@ -147,6 +182,7 @@ src/
   config.js           video, timing and brand constants
   render/
     scene.html        the animated scene; deterministic seek(t), no CSS animation
+    motifs.js         33 drawn vector illustrations for the comparison cards
     topic.js          topic loading, validation, image inlining
     renderer.js       Playwright frame capture
     encode.js         ffmpeg mux, thumbnail extraction

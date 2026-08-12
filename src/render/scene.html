@@ -34,6 +34,10 @@
   #cardL { left: 40px; }
   #cardR { left: 570px; }
   .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card .art {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    padding: 26px;
+  }
   .card .ph {
     width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
     text-align: center; padding: 32px; font-size: 56px; font-weight: 700; color: #fff;
@@ -239,19 +243,38 @@
   // exactly four steps along, so no pair can come out as two greens.
   const PH_HUES = [208, 12, 152, 292, 32, 190, 262, 108];
 
-  function placeholder(term, seed, side) {
+  /**
+   * A drawn illustration on a soft tint of the card's hue. Preferred over the
+   * word card — the heading already names the term, so the card should show it.
+   */
+  function motifCard(name, seed, side) {
+    const draw = window.MOTIFS && window.MOTIFS[name];
+    if (!draw) return null;
+    const h = hueFor(seed, side);
+    const c = {
+      a: `hsl(${h},64%,52%)`,
+      b: `hsl(${(h + 28) % 360},58%,38%)`,
+      ink: '#0b0b0c',
+    };
+    return `<div class="art" style="background:hsl(${h},52%,93%)">
+      <svg viewBox="0 0 400 400" width="100%" height="100%">${draw(c)}</svg>
+    </div>`;
+  }
+
+  function hueFor(seed, side) {
     let n = 0;
     for (const ch of String(seed)) n = (Math.imul(n, 31) + ch.charCodeAt(0)) >>> 0;
-    // Avalanche the low bits — indexing straight off a *31 accumulator gives
-    // near-identical results for similar-length strings, so every segment
-    // ends up the same colour.
     // Every step is forced back to unsigned: ^= yields a signed int32, and a
     // negative index would silently produce hsl(undefined) — an invisible card.
     n = (n ^ (n >>> 13)) >>> 0;
     n = Math.imul(n, 0x5bd1e995) >>> 0;
     n = (n ^ (n >>> 15)) >>> 0;
-    // Push the right card a half-turn around the palette from the left one.
-    const h = PH_HUES[(n + (side === 'R' ? 4 : 0)) % PH_HUES.length];
+    return PH_HUES[(n + (side === 'R' ? 4 : 0)) % PH_HUES.length];
+  }
+
+  /** Last resort when a side has neither a photo nor a motif. */
+  function placeholder(term, seed, side) {
+    const h = hueFor(seed, side);
     return `<div class="ph" style="background:linear-gradient(145deg,hsl(${h},58%,46%),hsl(${(h + 26) % 360},64%,26%))">${term}</div>`;
   }
 
@@ -389,15 +412,18 @@
     // Cache on the term as well as the image: placeholder cards have no image
     // URL, so keying on the URL alone would freeze the first segment's card in
     // place for the whole video.
-    const key = side.image ? `img:${slug}:${which}` : `ph:${slug}:${which}:${side.term}`;
+    const key = side.image
+      ? `img:${slug}:${which}`
+      : `art:${slug}:${which}:${side.motif || ''}:${side.term}`;
     if (node.dataset.key === key) return;    // avoid re-decoding the image each frame
     node.dataset.key = key;
+    // Photo wins if supplied, then the drawn motif, then the bare word card.
     // Both sides hash the same slug so the right card is always a fixed
     // distance around the palette from the left — hashing them independently
     // lets a segment draw both cards in one colour.
     node.innerHTML = side.image
       ? `<img src="${side.image}">`
-      : placeholder(escapeHtml(side.term), slug, which);
+      : (motifCard(side.motif, slug, which) || placeholder(escapeHtml(side.term), slug, which));
   }
 
   function applyPair(head, card, pop, opacity, slide) {
